@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Collections.Generic;
-using System.Net;
-using System.Runtime.Intrinsics.Arm;
+using System.Linq;
 
 namespace SpooferHWID
 {
@@ -10,7 +9,7 @@ namespace SpooferHWID
     {
         static void Main(string[] args)
         {
-            Console.Title = "HWID Spoofer | V1.0";
+            Console.Title = "HWID Spoofer | V1.2";
 
             while (true)
             {
@@ -45,180 +44,266 @@ namespace SpooferHWID
             UI.DisplayHeader();
             Console.WriteLine("\nIniciando processo de spoofing de todos os componentes...\n");
 
-            // Lista para armazenar resultados de cada operação
-            var results = new List<(string Component, bool Success)>();
-
             // Disco
-            results.Add(("Disco", SpoofComponent(() => {
-                var before = Disk.GetDiskInfo();
-                Console.WriteLine("[*] Spoofing Discos...");
-                Disk.SpoofDisks();
-                var after = Disk.GetDiskInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("Disco",
+                () => Disk.GetDiskInfo(),
+                () => { Disk.SpoofDisks(); return Disk.GetDiskInfo(); }
+            );
 
             // CPU
-            results.Add(("CPU", SpoofComponent(() => {
-                var before = CPU.GetCPUInfo();
-                Console.WriteLine("[*] Spoofing CPU...");
-                CPU.SpoofCPU();
-                var after = CPU.GetCPUInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("CPU",
+                () => CPU.GetCPUInfo(),
+                () => { CPU.SpoofCPU(); return CPU.GetCPUInfo(); }
+            );
 
             // GPU
-            results.Add(("GPU", SpoofComponent(() => {
-                var before = GPU.GetGPUInfo();
-                Console.WriteLine("[*] Spoofing GPU...");
-                GPU.SpoofGPU();
-                var after = GPU.GetGPUInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("GPU",
+                () => GPU.GetGPUInfo(),
+                () => { GPU.SpoofGPU(); return GPU.GetGPUInfo(); }
+            );
 
             // RAM
-            results.Add(("RAM", SpoofComponent(() => {
-                var before = RAM.GetRAMInfo();
-                Console.WriteLine("[*] Spoofing RAM...");
-                RAM.SpoofRAM();
-                var after = RAM.GetRAMInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("RAM",
+                () => RAM.GetRAMInfo(),
+                () => { RAM.SpoofRAM(); return RAM.GetRAMInfo(); }
+            );
 
             // Motherboard
-            results.Add(("Motherboard", SpoofComponent(() => {
-                var before = Motherboard.GetMotherboardInfo();
-                Console.WriteLine("[*] Spoofing Motherboard...");
-                Motherboard.SpoofMotherboard();
-                var after = Motherboard.GetMotherboardInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("Motherboard",
+                () => Motherboard.GetMotherboardInfo(),
+                () => { Motherboard.SpoofMotherboard(); return Motherboard.GetMotherboardInfo(); }
+            );
 
             // BIOS
-            results.Add(("BIOS", SpoofComponent(() => {
-                var before = Bios.GetBiosInfo();
-                Console.WriteLine("[*] Spoofing BIOS...");
-                Bios.SpoofBIOS();
-                var after = Bios.GetBiosInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("BIOS",
+                () => Bios.GetBiosInfo(),
+                () => { Bios.SpoofBIOS(); return Bios.GetBiosInfo(); }
+            );
 
             // Network/MAC
-            results.Add(("Network/MAC", SpoofComponent(() => {
-                var before = Network.GetNetworkInfo();
-                Console.WriteLine("[*] Spoofing Network/MAC...");
-                Network.SpoofMAC();
-                var after = Network.GetNetworkInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("Network/MAC",
+                () => Network.GetNetworkInfo(),
+                () => { Network.SpoofMAC(); return Network.GetNetworkInfo(); }
+            );
 
             // EFI
-            results.Add(("EFI", SpoofComponent(() => {
-                var before = EFI.GetEFIInfo();
-                Console.WriteLine("[*] Spoofing EFI...");
-                EFI.SpoofEFI();
-                var after = EFI.GetEFIInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("EFI",
+                () => EFI.GetEFIInfo(),
+                () => { EFI.SpoofEFI(); return EFI.GetEFIInfo(); }
+            );
 
             // TPM
-            results.Add(("TPM", SpoofComponent(() => {
-                var before = TPM.GetTPMInfo();
-                Console.WriteLine("[*] Spoofing TPM...");
-                TPM.SpoofTPM();
-                var after = TPM.GetTPMInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("TPM",
+                () => TPM.GetTPMInfo(),
+                () => { TPM.SpoofTPM(); return TPM.GetTPMInfo(); }
+            );
 
             // HVCI
-            results.Add(("HVCI", SpoofComponent(() => {
-                var before = HVCI.GetHVCIInfo();
-                Console.WriteLine("[*] Configurando HVCI...");
-                HVCI.ConfigureHVCI();
-                var after = HVCI.GetHVCIInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("HVCI",
+                () => HVCI.GetHVCIInfo(),
+                () => { HVCI.ConfigureHVCI(); return HVCI.GetHVCIInfo(); }
+            );
 
             // Boot
-            results.Add(("Boot", SpoofComponent(() => {
-                var before = Boot.GetBootInfo();
-                Console.WriteLine("[*] Spoofing Boot...");
-                Boot.SpoofBoot();
-                var after = Boot.GetBootInfo();
-                return CompareResults(before, after);
-            })));
+            ProcessHardwareComponent("Boot",
+                () => Boot.GetBootInfo(),
+                () => { Boot.SpoofBoot(); return Boot.GetBootInfo(); }
+            );
 
-            // Limpeza de Anti-Cheats
-            results.Add(("Anti-Cheats", SpoofComponent(() => {
-                Console.WriteLine("[*] Limpando Anti-Cheats...");
+            // Anti-Cheats - Usando o novo método que retorna (nome, encontrado, sucesso)
+            ProcessCleaningComponent("Anti-Cheats", () => {
                 return CleanAntiCheats.CleanAllAntiCheats();
-            })));
+            });
 
-            // Limpeza de Jogos
-            results.Add(("Games", SpoofComponent(() => {
-                Console.WriteLine("[*] Limpando rastros de jogos...");
+            // Games - Usando o novo método que retorna (nome, encontrado, sucesso)
+            ProcessCleaningComponent("Games", () => {
                 return CleanGames.CleanAllGames();
-            })));
+            });
 
-            // Limpeza de Sistema
-            results.Add(("System", SpoofComponent(() => {
-                Console.WriteLine("[*] Limpando rastros do sistema...");
+            // System - Usando o novo método que retorna (nome, encontrado, sucesso)
+            ProcessCleaningComponent("Sistema", () => {
                 return CleanSystem.CleanSystemTraces();
-            })));
-
-            // Exibir resultados
-            Console.WriteLine("\n\nResultados do processo de spoofing:");
-            Console.WriteLine("=====================================");
-
-            foreach (var result in results)
-            {
-                if (result.Success)
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"[√] {result.Component}: Modificado com sucesso");
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"[X] {result.Component}: Falha na modificação");
-                }
-                Console.ResetColor();
-            }
+            });
 
             Console.WriteLine("\nPressione qualquer tecla para voltar ao menu principal...");
             Console.ReadKey();
         }
 
-        private static bool SpoofComponent(Func<bool> spoofAction)
+        private static void ProcessHardwareComponent(string componentName, Func<Dictionary<string, string>> getInfo, Func<Dictionary<string, string>> spoofAndGetInfo)
         {
             try
             {
-                return spoofAction();
+                UI.DisplayComponentHeader(componentName);
+                Console.WriteLine($"[*] Spoofing {componentName}...");
+
+                // Obter informações originais
+                var before = getInfo();
+                Console.WriteLine($"* Valores atuais ({componentName}):");
+                DisplayValues(before, 3);
+
+                // Executar spoofing e obter novas informações
+                var after = spoofAndGetInfo();
+
+                // Comparar e mostrar resultados
+                Console.WriteLine($"\n* Resultados ({componentName}):");
+
+                // Usar a extensão para comparar os dicionários
+                var comparison = before.CompareWith(after);
+                var changes = comparison.GetChangedValues();
+
+                if (changes.Count > 0)
+                {
+                    // Mostrar valores alterados/adicionados/removidos
+                    DisplayComparisonResults(changes, 3);
+                }
+                else
+                {
+                    // Nenhuma alteração
+                    UI.DisplayNoChanges(3);
+                }
+
+                Console.WriteLine();
             }
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"[X] Erro: {ex.Message}");
+                Console.WriteLine($"[X] Erro ao processar {componentName}: {ex.Message}");
                 Console.ResetColor();
-                return false;
             }
         }
 
-        private static bool CompareResults(Dictionary<string, string> before, Dictionary<string, string> after)
+        private static void ProcessCleaningComponent(string componentName, Func<List<(string, bool, bool)>> cleanAction)
         {
-            // Se os dicionários tiverem tamanhos diferentes, houve mudança
-            if (before.Count != after.Count)
-                return true;
-
-            // Verifica se algum valor mudou
-            foreach (var key in before.Keys)
+            try
             {
-                // Se a chave não existir no "after" ou o valor for diferente, houve mudança
-                if (!after.ContainsKey(key) || before[key] != after[key])
-                    return true;
+                UI.DisplayComponentHeader(componentName);
+
+                // Executar limpeza e obter resultados
+                // Formato do retorno: (nome, encontrado, limpo)
+                var resultados = cleanAction();
+
+                // Mostrar resultados
+                Console.WriteLine($"\n* Resultados de Limpeza ({componentName}):");
+
+                int encontrados = 0;
+                int limpos = 0;
+
+                foreach (var (item, encontrado, sucesso) in resultados)
+                {
+                    if (!encontrado)
+                    {
+                        // Não encontrado - cor cinza
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.WriteLine($"  • {item}: Não encontrado");
+                        Console.ResetColor();
+                    }
+                    else if (sucesso)
+                    {
+                        // Encontrado e limpo - cor verde
+                        encontrados++;
+                        limpos++;
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"  ✓ {item}: Encontrado e limpo com sucesso");
+                        Console.ResetColor();
+                    }
+                    else
+                    {
+                        // Encontrado mas falha na limpeza - cor vermelha
+                        encontrados++;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"  ✗ {item}: Encontrado, mas falha na limpeza");
+                        Console.ResetColor();
+                    }
+                }
+
+                // Resumo
+                Console.WriteLine($"\n  Resumo: {encontrados} componentes encontrados, {limpos} limpos com sucesso");
+
+                Console.WriteLine();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"[X] Erro ao processar {componentName}: {ex.Message}");
+                Console.ResetColor();
+            }
+        }
+
+        private static void DisplayValues(Dictionary<string, string> values, int indent = 0)
+        {
+            string indentStr = new string(' ', indent);
+
+            // Exibir no máximo 5 valores para não sobrecarregar a tela
+            int count = 0;
+            foreach (var pair in values.Take(5))
+            {
+                Console.WriteLine($"{indentStr}{pair.Key}: {pair.Value}");
+                count++;
             }
 
-            // Nenhuma mudança detectada
-            return false;
+            // Se houver mais valores, indicar a quantidade
+            if (count < values.Count)
+            {
+                Console.WriteLine($"{indentStr}... e mais {values.Count - count} valores");
+            }
+
+            // Se não houver valores, informar
+            if (values.Count == 0)
+            {
+                Console.WriteLine($"{indentStr}Nenhuma informação disponível");
+            }
+        }
+
+        private static void DisplayComparisonResults(Dictionary<string, (bool Success, string BeforeValue, string AfterValue, ChangeType Type)> changes, int indent = 0)
+        {
+            string indentStr = new string(' ', indent);
+
+            // Limitar o número de itens exibidos
+            int maxDisplay = 10;
+            int displayCount = 0;
+
+            // Primeiro mostrar valores modificados
+            foreach (var kvp in changes.Where(x => x.Value.Type == ChangeType.Modified).Take(maxDisplay))
+            {
+                DisplayModifiedValue(kvp.Key, kvp.Value.BeforeValue, kvp.Value.AfterValue, indent);
+                displayCount++;
+            }
+
+            // Depois mostrar valores adicionados
+            foreach (var kvp in changes.Where(x => x.Value.Type == ChangeType.Added).Take(maxDisplay - displayCount))
+            {
+                UI.DisplayNewValue(kvp.Key, kvp.Value.AfterValue, indent);
+                displayCount++;
+            }
+
+            // Por fim mostrar valores removidos
+            foreach (var kvp in changes.Where(x => x.Value.Type == ChangeType.Removed).Take(maxDisplay - displayCount))
+            {
+                UI.DisplayRemovedValue(kvp.Key, kvp.Value.BeforeValue, indent);
+                displayCount++;
+            }
+
+            // Se houver mais alterações do que o exibido, indicar
+            if (displayCount >= maxDisplay && changes.Count > maxDisplay)
+            {
+                Console.WriteLine($"{indentStr}... e mais {changes.Count - displayCount} alterações");
+            }
+        }
+
+        private static void DisplayModifiedValue(string key, string beforeValue, string afterValue, int indent = 0)
+        {
+            string indentStr = new string(' ', indent);
+
+            // Exibir a chave
+            Console.WriteLine($"{indentStr}{key}:");
+
+            // Exibir valor anterior
+            Console.WriteLine($"{indentStr}  Atual: {beforeValue}");
+
+            // Exibir valor alterado em verde
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"{indentStr}  Alterado: {afterValue}");
+            Console.ResetColor();
         }
     }
 }

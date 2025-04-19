@@ -7,21 +7,59 @@ namespace SpooferHWID
 {
     public static class CleanGames
     {
-        public static bool CleanAllGames()
+        public static List<(string, bool, bool)> CleanAllGames()
         {
-            bool success = true;
+            var resultados = new List<(string, bool, bool)>();
 
-            // Limpar rastros de jogos específicos
-            success &= CleanValorant();
-            success &= CleanFortnite();
-            success &= CleanApex();
-            success &= CleanRainbowSix();
-            success &= CleanCSGO();
-            success &= CleanPUBG();
-            success &= CleanRocketLeague();
-            success &= CleanUbisoft();
+            // Valorant
+            bool valorantEncontrado = CleanAntiCheats.EstaInstalado("VALORANT") ||
+                                    Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VALORANT"));
+            bool valorantSucesso = valorantEncontrado ? CleanValorant() : false;
+            resultados.Add(("Valorant", valorantEncontrado, valorantSucesso));
 
-            return success;
+            // Fortnite
+            bool fortniteEncontrado = CleanAntiCheats.EstaInstalado("Fortnite") ||
+                                     Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FortniteGame"));
+            bool fortniteSucesso = fortniteEncontrado ? CleanFortnite() : false;
+            resultados.Add(("Fortnite", fortniteEncontrado, fortniteSucesso));
+
+            // Apex Legends
+            bool apexEncontrado = CleanAntiCheats.EstaInstalado("Apex Legends") ||
+                                Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Saved Games", "Respawn", "Apex"));
+            bool apexSucesso = apexEncontrado ? CleanApex() : false;
+            resultados.Add(("Apex Legends", apexEncontrado, apexSucesso));
+
+            // Rainbow Six Siege
+            bool r6Encontrado = CleanAntiCheats.EstaInstalado("Rainbow Six") ||
+                              Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Rainbow Six - Siege"));
+            bool r6Sucesso = r6Encontrado ? CleanRainbowSix() : false;
+            resultados.Add(("Rainbow Six", r6Encontrado, r6Sucesso));
+
+            // CS:GO
+            bool csgoEncontrado = CleanAntiCheats.EstaInstalado("Counter-Strike") ||
+                                Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam", "steamapps", "common", "Counter-Strike Global Offensive"));
+            bool csgoSucesso = csgoEncontrado ? CleanCSGO() : false;
+            resultados.Add(("CS:GO", csgoEncontrado, csgoSucesso));
+
+            // PUBG
+            bool pubgEncontrado = CleanAntiCheats.EstaInstalado("PUBG") ||
+                                Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TslGame"));
+            bool pubgSucesso = pubgEncontrado ? CleanPUBG() : false;
+            resultados.Add(("PUBG", pubgEncontrado, pubgSucesso));
+
+            // Rocket League
+            bool rlEncontrado = CleanAntiCheats.EstaInstalado("Rocket League") ||
+                              Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Rocket League"));
+            bool rlSucesso = rlEncontrado ? CleanRocketLeague() : false;
+            resultados.Add(("Rocket League", rlEncontrado, rlSucesso));
+
+            // Ubisoft
+            bool ubiEncontrado = CleanAntiCheats.EstaInstalado("Ubisoft") ||
+                               Directory.Exists(Path.Combine("C:", "Program Files (x86)", "Ubisoft", "Ubisoft Game Launcher"));
+            bool ubiSucesso = ubiEncontrado ? CleanUbisoft() : false;
+            resultados.Add(("Jogos Ubisoft", ubiEncontrado, ubiSucesso));
+
+            return resultados;
         }
 
         // Limpa rastros do Valorant

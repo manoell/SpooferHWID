@@ -199,15 +199,36 @@ Este documento serve como um guia completo sobre os componentes e funcionalidade
 3. A eficácia contra anti-cheats específicos como o Vanguard pode depender de atualizações constantes, pois os métodos de detecção estão sempre evoluindo.
 4. Em termos de desenvolvimento responsável, considere implementar proteções para que a ferramenta não possa ser utilizada para fins maliciosos.
 
-## Atualização da versão 1.0 (Abril 2025)
+## Atualização da versão 1.2 (Abril 2025)
 
-A versão atual do SpooferHWID implementa a maioria dos recursos em nível de usermode, com grandes avanços em:
+A versão atual do SpooferHWID implementa a maioria dos recursos em nível de usermode, com importantes melhorias:
 
-- Interface simplificada com opções "Spoof ALL" e "EXIT" 
+- Interface aprimorada com exibição detalhada dos valores modificados:
+  - Exibe valores originais antes da modificação
+  - Destaca em verde os valores alterados com sucesso
+  - Indica em vermelho os valores que não puderam ser alterados
+  - Mostra em cinza itens não encontrados no sistema
+
 - Sistema de verificação que compara valores antes/depois das alterações
-- Feedback visual com códigos de cores (verde para sucesso, vermelho para falha)
+- Feedback visual com códigos de cores para melhor compreensão
+- Detecção inteligente da presença de anti-cheats e jogos
+- Resumos detalhados das operações realizadas
 - Suporte completo para limpeza de anti-cheats (Vanguard, EAC, BattlEye, FaceIT, ESEA)
 - Limpeza de jogos específicos (Valorant, Fortnite, Apex Legends, Rainbow Six, CS:GO, PUBG, Rocket League)
 - Implementação modular organizada por componentes
+
+### Instruções de Uso
+
+1. Execute o programa como administrador
+2. **IMPORTANTE**: Recomendamos criar um ponto de restauração do sistema antes de usar
+3. Selecione "Spoof ALL" para modificar todos os componentes
+4. Analise o relatório detalhado para verificar as alterações realizadas
+5. Reinicie o sistema para aplicar todas as alterações
+
+### Requisitos do Sistema
+
+- .NET 9.0 Runtime
+- Windows 10 ou Windows 11
+- Privilégios de administrador
 
 Os recursos de modo kernel estão planejados para futuras atualizações.

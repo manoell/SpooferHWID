@@ -63,18 +63,87 @@ namespace SpooferHWID
             Console.ResetColor();
         }
 
-        public static void DisplayComponentResult(string component, bool success)
+        public static void DisplayValueDetails(string key, string beforeValue, string afterValue, int indent = 0)
         {
+            string indentStr = new string(' ', indent);
+
+            // Exibir a chave
+            Console.WriteLine($"{indentStr}{key}:");
+
+            // Exibir valor anterior
+            Console.Write($"{indentStr}  Antes: {beforeValue}");
+            Console.WriteLine();
+
+            // Verificar se o valor mudou
+            if (beforeValue != afterValue)
+            {
+                // Valor alterado com sucesso - verde
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($"{indentStr}  Depois: {afterValue}");
+            }
+            else
+            {
+                // Valor não alterado - vermelho
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write($"{indentStr}  Não alterado: {afterValue}");
+            }
+
+            Console.ResetColor();
+            Console.WriteLine();
+        }
+
+        public static void DisplayNewValue(string key, string value, int indent = 0)
+        {
+            string indentStr = new string(' ', indent);
+
+            // Novo valor adicionado - verde
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"{indentStr}+ {key}: {value} (Novo)");
+            Console.ResetColor();
+        }
+
+        public static void DisplayRemovedValue(string key, string value, int indent = 0)
+        {
+            string indentStr = new string(' ', indent);
+
+            // Valor removido - amarelo (alerta)
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"{indentStr}- {key}: {value} (Removido)");
+            Console.ResetColor();
+        }
+
+        public static void DisplayCleaningResult(string component, bool success, int indent = 0)
+        {
+            string indentStr = new string(' ', indent);
+
             if (success)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"[√] {component}: Modificado com sucesso");
+                Console.WriteLine($"{indentStr}✓ {component}: Limpo com sucesso");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"[X] {component}: Falha na modificação");
+                Console.WriteLine($"{indentStr}✗ {component}: Falha na limpeza");
             }
+
+            Console.ResetColor();
+        }
+
+        public static void DisplayNoChanges(int indent = 0)
+        {
+            string indentStr = new string(' ', indent);
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"{indentStr}Nenhum valor foi alterado");
+            Console.ResetColor();
+        }
+
+        public static void DisplayComponentHeader(string componentName)
+        {
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"===== {componentName} =====");
             Console.ResetColor();
         }
     }

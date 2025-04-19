@@ -8,18 +8,93 @@ namespace SpooferHWID
 {
     public static class CleanAntiCheats
     {
-        public static bool CleanAllAntiCheats()
+        public static List<(string, bool, bool)> CleanAllAntiCheats()
         {
-            bool success = true;
+            var resultados = new List<(string, bool, bool)>();
 
-            // Limpar traços de anti-cheats comuns
-            success &= CleanVanguard();
-            success &= CleanEasyAntiCheat();
-            success &= CleanBattlEye();
-            success &= CleanFaceIT();
-            success &= CleanESEA();
+            // Vanguard (Valorant)
+            bool vanguardEncontrado = EstaInstalado("Vanguard") ||
+                                    Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VALORANT")) ||
+                                    Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Riot Vanguard"));
+            bool vanguardSucesso = vanguardEncontrado ? CleanVanguard() : false;
+            resultados.Add(("Vanguard", vanguardEncontrado, vanguardSucesso));
 
-            return success;
+            // EasyAntiCheat
+            bool eacEncontrado = EstaInstalado("EasyAntiCheat") ||
+                                Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "EasyAntiCheat"));
+            bool eacSucesso = eacEncontrado ? CleanEasyAntiCheat() : false;
+            resultados.Add(("EasyAntiCheat", eacEncontrado, eacSucesso));
+
+            // BattlEye
+            bool beEncontrado = EstaInstalado("BattlEye") ||
+                              Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "BattlEye"));
+            bool beSucesso = beEncontrado ? CleanBattlEye() : false;
+            resultados.Add(("BattlEye", beEncontrado, beSucesso));
+
+            // FaceIT
+            bool faceitEncontrado = EstaInstalado("FACEIT") ||
+                                  Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FACEIT"));
+            bool faceitSucesso = faceitEncontrado ? CleanFaceIT() : false;
+            resultados.Add(("FaceIT", faceitEncontrado, faceitSucesso));
+
+            // ESEA
+            bool eseaEncontrado = EstaInstalado("ESEA") ||
+                                Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ESEA"));
+            bool eseaSucesso = eseaEncontrado ? CleanESEA() : false;
+            resultados.Add(("ESEA", eseaEncontrado, eseaSucesso));
+
+            return resultados;
+        }
+
+        // Método auxiliar para verificar se um software está instalado
+        public static bool EstaInstalado(string nomeSoftware)
+        {
+            try
+            {
+                // Verificar em registros de instalação do Windows
+                using (RegistryKey uninstallKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"))
+                {
+                    if (uninstallKey != null)
+                    {
+                        foreach (string subKeyName in uninstallKey.GetSubKeyNames())
+                        {
+                            using (RegistryKey subKey = uninstallKey.OpenSubKey(subKeyName))
+                            {
+                                string displayName = subKey.GetValue("DisplayName")?.ToString() ?? "";
+                                if (displayName.Contains(nomeSoftware))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Verificar também em registros de 32 bits em sistemas 64 bits
+                using (RegistryKey uninstallKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"))
+                {
+                    if (uninstallKey != null)
+                    {
+                        foreach (string subKeyName in uninstallKey.GetSubKeyNames())
+                        {
+                            using (RegistryKey subKey = uninstallKey.OpenSubKey(subKeyName))
+                            {
+                                string displayName = subKey.GetValue("DisplayName")?.ToString() ?? "";
+                                if (displayName.Contains(nomeSoftware))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Ignora erros na verificação
+            }
+
+            return false;
         }
 
         // Limpa o Vanguard (Valorant)

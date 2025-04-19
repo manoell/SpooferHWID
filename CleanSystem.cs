@@ -8,19 +8,45 @@ namespace SpooferHWID
 {
     public static class CleanSystem
     {
-        public static bool CleanSystemTraces()
+        public static List<(string, bool, bool)> CleanSystemTraces()
         {
-            bool success = true;
+            var resultados = new List<(string, bool, bool)>();
 
-            // Limpar diversos vestígios do sistema
-            success &= CleanWindowsEventLogs();
-            success &= CleanPrefetchFiles();
-            success &= CleanTempFiles();
-            success &= CleanUSNJournal();
-            success &= CleanRecentItems();
-            success &= CleanWindowsLogs();
+            // Windows Event Logs
+            bool logsEncontrados = true; // Sempre disponível no Windows
+            bool logsSucesso = CleanWindowsEventLogs();
+            resultados.Add(("Logs de Eventos", logsEncontrados, logsSucesso));
 
-            return success;
+            // Prefetch Files
+            string prefetchPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Prefetch");
+            bool prefetchEncontrado = Directory.Exists(prefetchPath);
+            bool prefetchSucesso = prefetchEncontrado ? CleanPrefetchFiles() : false;
+            resultados.Add(("Arquivos Prefetch", prefetchEncontrado, prefetchSucesso));
+
+            // Temp Files
+            string tempPath = Path.GetTempPath();
+            bool tempEncontrado = Directory.Exists(tempPath);
+            bool tempSucesso = tempEncontrado ? CleanTempFiles() : false;
+            resultados.Add(("Arquivos Temporários", tempEncontrado, tempSucesso));
+
+            // USN Journal
+            bool usnEncontrado = true; // Sempre disponível em sistemas NTFS
+            bool usnSucesso = CleanUSNJournal();
+            resultados.Add(("USN Journal", usnEncontrado, usnSucesso));
+
+            // Recent Items
+            string recentPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Recent));
+            bool recentEncontrado = Directory.Exists(recentPath);
+            bool recentSucesso = recentEncontrado ? CleanRecentItems() : false;
+            resultados.Add(("Itens Recentes", recentEncontrado, recentSucesso));
+
+            // Windows Logs
+            string windowsLogsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Logs");
+            bool windowsLogsEncontrado = Directory.Exists(windowsLogsPath);
+            bool windowsLogsSucesso = windowsLogsEncontrado ? CleanWindowsLogs() : false;
+            resultados.Add(("Logs do Windows", windowsLogsEncontrado, windowsLogsSucesso));
+
+            return resultados;
         }
 
         // Limpa os logs de eventos do Windows
